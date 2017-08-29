@@ -1,10 +1,23 @@
 package com.myrecipe.ui.fragment
 
+import android.graphics.Color
 import android.os.Bundle
+import android.support.v7.widget.GridLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.myrecipe.R
+import com.myrecipe.service.IRecipeService
+import com.myrecipe.service.impl.RecipeServiceImpl
+import com.myrecipe.ui.adapter.CategoryAdapter
+import com.myrecipe.ui.vo.CategoryVO
+import kotlinx.android.synthetic.main.common_tool_bar.*
+import kotlinx.android.synthetic.main.fra_main_page.*
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.sdk25.coroutines.onClick
+import org.jetbrains.anko.support.v4.onRefresh
+import org.jetbrains.anko.support.v4.toast
+import org.jetbrains.anko.uiThread
 
 /**
  * 首页fragment
@@ -12,12 +25,62 @@ import com.myrecipe.R
  */
 class MainPageFragment : BaseFragment() {
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fra_main_page, container, false)
+    private val recipeService: IRecipeService by lazy { RecipeServiceImpl() }
+    var list: List<CategoryVO> = emptyList()
+    var adapter: CategoryAdapter? = null
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+            inflater.inflate(R.layout.fra_main_page, container, false)
+
+    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        tv_title.text = "选菜品"
+        line.visibility = View.VISIBLE
+        tv_search.onClick { clickSearch() }
+        layout_refresh.setColorSchemeColors(resources.getColor(R.color.c_ff6600), Color.GREEN, Color.BLUE)
+        layout_refresh.onRefresh { refreshView() }
+        recycler_view.layoutManager = GridLayoutManager(context, 2)
     }
 
-    fun refreshView() {
 
+    private fun clickSearch() {
+
+    }
+
+    /**
+     * 刷新view(由外部调用)
+     */
+    fun refreshView() {
+        layout_refresh.measure(0, 0)
+        layout_refresh.isRefreshing = true
+        doAsync {
+            try {
+                list = recipeService.refreshCategory()
+                uiThread {
+                    refreshUI()
+                }
+            } catch (e: Exception) {
+                uiThread {
+                    layout_refresh.isRefreshing = false
+                    toast(e.message.orEmpty())
+                }
+            }
+        }
+    }
+
+    /**
+     * 刷新UI
+     */
+    private fun refreshUI() {
+        layout_refresh.isRefreshing = false
+        if (adapter == null) {
+            adapter = CategoryAdapter(context)
+            adapter?.list = list
+            recycler_view.adapter = adapter
+        } else {
+            adapter?.list = list
+            adapter?.notifyDataSetChanged()
+        }
     }
 
 }

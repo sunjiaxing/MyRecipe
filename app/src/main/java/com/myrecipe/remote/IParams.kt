@@ -7,6 +7,7 @@ package com.myrecipe.remote
 object IParams {
 
     // A
+    val AUTHORIZATION = "Authorization"
     // B
 
     // C

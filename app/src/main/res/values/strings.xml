@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">MyRecipe</string>
+    <string name="app_name">随心菜谱</string>
+    <string name="loading">加载中</string>
 </resources>
