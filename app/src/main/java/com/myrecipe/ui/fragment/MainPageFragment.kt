@@ -38,7 +38,7 @@ class MainPageFragment : BaseFragment() {
         line.visibility = View.VISIBLE
         tv_search.onClick { clickSearch() }
         layout_refresh.setColorSchemeColors(resources.getColor(R.color.c_ff6600), Color.GREEN, Color.BLUE)
-        layout_refresh.onRefresh { refreshView() }
+        layout_refresh.onRefresh { refreshData() }
         recycler_view.layoutManager = GridLayoutManager(context, 2)
     }
 
@@ -51,8 +51,37 @@ class MainPageFragment : BaseFragment() {
      * 刷新view(由外部调用)
      */
     fun refreshView() {
-        layout_refresh.measure(0, 0)
-        layout_refresh.isRefreshing = true
+        if (list.isEmpty()) {
+            layout_refresh.measure(0, 0)
+            layout_refresh.isRefreshing = true
+            getDataFromDB()
+        }
+    }
+
+    /**
+     * 从本地库中获取数据
+     */
+    private fun getDataFromDB() {
+        doAsync {
+            try {
+                list = recipeService.getCategoryFromDB()
+                uiThread {
+                    if (list.isEmpty()) refreshData()
+                    else refreshUI()
+                }
+            } catch (e: Exception) {
+                uiThread {
+                    layout_refresh.isRefreshing = false
+                    toast(e.message.orEmpty())
+                }
+            }
+        }
+    }
+
+    /**
+     * 刷新数据
+     */
+    private fun refreshData() {
         doAsync {
             try {
                 list = recipeService.refreshCategory()
@@ -68,6 +97,7 @@ class MainPageFragment : BaseFragment() {
         }
     }
 
+
     /**
      * 刷新UI
      */
@@ -75,12 +105,19 @@ class MainPageFragment : BaseFragment() {
         layout_refresh.isRefreshing = false
         if (adapter == null) {
             adapter = CategoryAdapter(context)
+            adapter?.listener = View.OnClickListener { v ->
+                clickCategory(v.tag as Int)
+            }
             adapter?.list = list
             recycler_view.adapter = adapter
         } else {
             adapter?.list = list
             adapter?.notifyDataSetChanged()
         }
+    }
+
+    private fun clickCategory(position: Int) {
+
     }
 
 }
