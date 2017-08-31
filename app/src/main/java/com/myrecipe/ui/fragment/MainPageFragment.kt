@@ -7,8 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.myrecipe.R
+import com.myrecipe.remote.IParams
 import com.myrecipe.service.IRecipeService
 import com.myrecipe.service.impl.RecipeServiceImpl
+import com.myrecipe.ui.activity.ChildCategoryActivity
 import com.myrecipe.ui.adapter.CategoryAdapter
 import com.myrecipe.ui.vo.CategoryVO
 import kotlinx.android.synthetic.main.common_tool_bar.*
@@ -16,6 +18,7 @@ import kotlinx.android.synthetic.main.fra_main_page.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.support.v4.onRefresh
+import org.jetbrains.anko.support.v4.startActivity
 import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 
@@ -26,8 +29,8 @@ import org.jetbrains.anko.uiThread
 class MainPageFragment : BaseFragment() {
 
     private val recipeService: IRecipeService by lazy { RecipeServiceImpl() }
-    var list: List<CategoryVO> = emptyList()
-    var adapter: CategoryAdapter? = null
+    private var adapter: CategoryAdapter? = null
+    private var list: List<CategoryVO> = emptyList()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fra_main_page, container, false)
@@ -116,8 +119,14 @@ class MainPageFragment : BaseFragment() {
         }
     }
 
+    /**
+     * 分类点击事件
+     */
     private fun clickCategory(position: Int) {
-
+        if (list.isNotEmpty()) {
+            val vo = list[position]
+            startActivity<ChildCategoryActivity>(IParams.CATEGORY_VO to vo)
+        }
     }
 
 }

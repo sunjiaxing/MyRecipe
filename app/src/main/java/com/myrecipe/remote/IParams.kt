@@ -12,6 +12,8 @@ object IParams {
 
     // C
     val COOKING = "cooking"
+    val CATEGORY_VO = "categoryVO"
+
     // D
     // E
     // F
